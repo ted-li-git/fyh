@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<script>
+  var _hmt = _hmt || [];
+  (function () {
+    var hm = document.createElement("script");
+    hm.src = "https://hm.baidu.com/hm.js?45f95f1bfde85c7777c3d1157e8c2d34";
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(hm, s);
+  })();
+</script>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>炸弹爆炸和烟花效果</title>
+  <style>
+    /* 夜空背景 */
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+    }
+
+    /* 星空背景 */
+    .starry-background {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle at bottom, #001025, #000000);
+      z-index: -1;
+    }
+
+    .stars {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: url('https://i.imgur.com/3Zv2v1m.png') repeat;
+      opacity: 0.5;
+      animation: twinkle 5s infinite alternate;
+    }
+
+    @keyframes twinkle {
+      from {
+        opacity: 0.3;
+      }
+      to {
+        opacity: 0.7;
+      }
+    }
+
+    /* 孔明灯样式 */
+    .lantern {
+      position: absolute;
+      width: 30px;
+      height: 45px;
+      background: radial-gradient(circle, #ff8c00, #ff4500);
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(255, 140, 0, 0.8);
+      animation: floatUp infinite linear;
+    }
+
+    @keyframes floatUp {
+      0% {
+        transform: translateY(100vh); /* 从页面底部开始 */
+        opacity: 0;
+      }
+      10% {
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(-200%); /* 上升到页面外 */
+        opacity: 0;
+      }
+    }
+
+    /* 新春快乐文本样式 */
+    .new-year-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Arial', sans-serif;
+      font-size: 100px; /* 增大字体 */
+      font-weight: bold;
+      color: #ff8c00;
+      text-shadow: 2px 2px 10px rgba(255, 140, 0, 0.8);
+      opacity: 0; /* 初始透明 */
+      transition: opacity 3s ease-out; /* 设置渐变效果 */
+    }
+  </style>
+</head>
+<body>
+  <!-- 星空背景 -->
+  <div class="starry-background">
+    <div class="stars"></div>
+  </div>
+
+  <!-- 新春快乐文本 -->
+  <div class="new-year-text">2025 新春快乐！</div>
+
+  <!-- 孔明灯容器 -->
+  <div class="lantern-container"></div>
+
+  <!-- 烟花效果画布 -->
+  <canvas id="fireworks"></canvas>
+
+  <script>
+    // 初始化孔明灯
+    const lanternContainer = document.querySelector('.lantern-container');
+    
+    // 创建一个生成孔明灯的函数，逐渐增加
+    let lanternCount = 0;
+    function generateLantern() {
+      const lantern = document.createElement('div');
+      lantern.classList.add('lantern');
+      lantern.style.left = Math.random() * 100 + '%';
+      lantern.style.animationDuration = `${10 + Math.random() * 5}s`;
+      lanternContainer.appendChild(lantern);
+      lanternCount++;
+      if (lanternCount >= 50) clearInterval(lanternInterval);  // 限制最大数量
+    }
+
+    // 设置一个间隔，逐渐添加孔明灯
+    const lanternInterval = setInterval(generateLantern, 200);  // 每200ms增加一个孔明灯
+
+    // 烟花效果
+    const canvas = document.getElementById('fireworks');
+    const ctx = canvas.getContext('2d');
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    let particles = [];
+    function createFirework(x, y) {
+      const particleCount = 150;
+      for (let i = 0; i < particleCount; i++) {
+        particles.push(new Particle(x, y));
+      }
+    }
+
+    class Particle {
+      constructor(x, y) {
+        this.x = x;
+        this.y = y;
+        this.size = Math.random() * 3 + 1;
+        this.speedX = Math.random() * 6 - 3;
+        this.speedY = Math.random() * 6 - 3;
+        this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        this.alpha = 1;
+      }
+
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        this.alpha -= 0.01;
+      }
+
+      draw() {
+        ctx.globalAlpha = this.alpha;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles = particles.filter(particle => particle.alpha > 0);
+      particles.forEach(particle => {
+        particle.update();
+        particle.draw();
+      });
+      requestAnimationFrame(animate);
+    }
+
+    function autoFireworks() {
+      setInterval(() => {
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height / 2;
+        createFirework(x, y);
+      }, 300);
+    }
+
+    animate();
+    autoFireworks();
+
+    // 绘制炸弹函数（没有导火线）
+    let bombScale = 1; // 炸弹的初始大小
+    let bombY = window.innerHeight / 2; // 将炸弹固定在屏幕中间
+    let bombX = window.innerWidth / 2;
+    let bombTimer = 0;
+    let isExploding = false; // 是否处于爆炸状态
+    let bombActive = true; // 判断炸弹是否仍然存在
+
+    function drawBomb(x, y, scale) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(x, y, 30 * scale, 0, Math.PI * 2, false); // 绘制炸弹的圆形，随着scale变化
+      ctx.fillStyle = '#ffcc00'; // 黄色
+      ctx.fill();
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = 'rgba(255, 204, 0, 0.8)'; // 添加阴影
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#ff9900';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // 动画函数：炸弹上升到中间并开始呼吸效果
+    function animateBomb() {
+      if (bombActive) {
+        // 在前200帧，炸弹开始呼吸效果（大小不断变化）
+        if (bombTimer < 200) {
+          bombScale = 1 + Math.sin(bombTimer / 30) * 0.2; // 使炸弹有呼吸的效果
+        } else if (bombTimer >= 200 && !isExploding) {
+          // 经过一段时间后，炸弹开始爆炸
+          isExploding = true;
+          setTimeout(() => {
+            document.querySelector('.new-year-text').style.opacity = 1;  // 显示文本
+            createFirework(bombX, bombY); // 同时创建烟花
+            bombActive = false; // 爆炸后隐藏炸弹
+          }, 500); // 延迟0.5秒后爆炸
+        }
+
+        drawBomb(bombX, bombY, bombScale);
+      }
+
+      bombTimer++;
+      requestAnimationFrame(animateBomb); // 循环调用动画
+    }
+
+    // 页面加载5秒后才开始炸弹动画
+    setTimeout(animateBomb, 5000); // 5秒后开始炸弹动画
+  </script>
+</body>
+</html>
+
